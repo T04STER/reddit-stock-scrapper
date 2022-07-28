@@ -1,0 +1,9 @@
+com\rss\config\TaskSchedulerConfig.class
+com\rss\ScrapperApplication.class
+com\rss\task\RedditScrapperTaskRunner.class
+com\rss\stock\Stock.class
+com\rss\config\ClientConfig.class
+com\rss\task\RedditScrapper.class
+com\rss\stock\StockService.class
+com\rss\client\stockdatafetcher\StockDataFetcherClient.class
+com\rss\AppStartupRunner.class
