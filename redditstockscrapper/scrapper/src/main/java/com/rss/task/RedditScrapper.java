@@ -2,30 +2,24 @@ package com.rss.task;
 
 
 import com.rss.stock.StockService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masecla.reddit4j.client.Reddit4J;
+import masecla.reddit4j.client.UserAgentBuilder;
 import masecla.reddit4j.objects.RedditPost;
 import masecla.reddit4j.objects.Sorting;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
+@AllArgsConstructor
 @Slf4j
 public class RedditScrapper {
     private final Reddit4J client;
     private final StockService stockService;
-
-    public RedditScrapper(Reddit4J reddit4j, StockService stockService) {
-        this.client = reddit4j;
-        this.stockService = stockService;
-
-
-    }
 
     public void scrap() throws Exception {
         HashMap<String, Integer> stockMap = scrapSubreddit("wallstreetbets");
@@ -66,7 +60,14 @@ public class RedditScrapper {
                 "WSB"
         }).collect(Collectors.toSet());
 
-        List<RedditPost> rp = client.getSubredditPosts(subReddit, Sorting.RISING).submit();
+        List<RedditPost> rp = Stream.of(
+                client.getSubredditPosts(subReddit, Sorting.NEW).submit(),
+                client.getSubredditPosts(subReddit, Sorting.RISING).submit(),
+                client.getSubredditPosts(subReddit, Sorting.HOT).submit(),
+                client.getSubredditPosts(subReddit, Sorting.TOP).submit(),
+                client.getSubredditPosts(subReddit, Sorting.CONTROVERSIAL).submit()
+                ).flatMap(Collection::stream).collect(Collectors.toList());
+
         log.info("Found {} posts", rp.size());
         rp.forEach(redditPost -> {
             String data = new StringBuilder(redditPost.getTitle())

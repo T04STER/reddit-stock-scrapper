@@ -19,8 +19,8 @@ import java.util.HashMap;
 @Entity
 public class Stock {
     @Id
-    @SequenceGenerator(name = "ticker_generator", sequenceName = "ticker_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ticker_generator")
+    @SequenceGenerator(name = "stock_id_generator", sequenceName = "stock_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stock_id_generator")
     private Long id;
     private String symbol;
     private Double open;

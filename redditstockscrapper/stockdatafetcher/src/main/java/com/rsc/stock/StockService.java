@@ -7,12 +7,13 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @AllArgsConstructor
 @Slf4j
 public class StockService {
-    private static final long DELAY_MS = 12_000; //Due to api limit
+    private static final long DELAY_MS = 15_000; //Due to api limit
     private final AlphaVantageClient alphaVantageClient;
     private final  StockRepository stockRepository;
 
@@ -20,22 +21,32 @@ public class StockService {
         return stockRepository.findAll();
     }
 
-    @Async
-    public List<Stock> saveAllStocks(List<ScrapperStockDTO> stockDTOS) {
-        List<Stock> stocks = stockDTOS.stream().map(stockDTO -> {
-            log.info("Sending request for {} symbol", stockDTO.getTickerSymbol());
+    public void saveAllStocks(List<ScrapperStockDTO> stockDTOS) {
+        stockRepository.deleteAll();
+        stockRepository.resetPrimaryKey();
+        int counter = 0;
+        int MAX_STOCKS = 10;
+
+        for (ScrapperStockDTO stockDTO: stockDTOS) {
+            if (stockDTO.getRepeats() < 3) {
+                continue;
+            }
+            Stock stock = alphaVantageClient.getStockBySymbol(stockDTO.getTickerSymbol());
+            if (stock != null) {
+                stockRepository.save(stock);
+                counter++;
+            }
+
+            if (counter >= MAX_STOCKS) {
+                break;
+            }
+
             try {
                 Thread.sleep(DELAY_MS);
             } catch (InterruptedException e) {
-        e.printStackTrace();
+                e.printStackTrace();
             }
-            return alphaVantageClient.getStockBySymbol(stockDTO.getTickerSymbol());
-        }).filter(stock -> stock!=null).toList();
+        }
 
-        stockRepository.deleteAll();
-
-        stockRepository.saveAll(stocks);
-
-        return stocks;
     }
 }

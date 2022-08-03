@@ -26,6 +26,6 @@ public class StockService {
 
         stocks.forEach(stock -> log.info("{} found {} times", stock.getTickerSymbol(), stock.getRepeats()));
 
-        stockDataFetcherClient.sendAll(stocks.subList(0, 10));
+        stockDataFetcherClient.sendAll(stocks);
     }
 }
